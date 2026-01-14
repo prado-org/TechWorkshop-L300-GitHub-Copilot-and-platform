@@ -9,11 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    #defaults:
-      #run:
-      #  working-directory: src
-
     env:
       DOTNET_NOLOGO: "true"
       ACR_NAME: ${{ secrets.ACR_NAME }}
