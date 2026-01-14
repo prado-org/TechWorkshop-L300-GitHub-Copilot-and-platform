@@ -10,6 +10,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: src
+
     env:
       DOTNET_NOLOGO: "true"
       ACR_NAME: ${{ secrets.ACR_NAME }}
@@ -33,7 +37,7 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: .
-        file: src/Dockerfile
+        file: Dockerfile
         push: true
         tags: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.IMAGE_TAG }}
 
