@@ -11,38 +11,30 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DOTNET_NOLOGO: "true"
+      ACR_NAME: ${{ secrets.ACR_NAME }}
+      REGISTRY: ${{ secrets.ACR_NAME }}.azurecr.io
+      REPOSITORY: zava-storefront:latest
+      IMAGE_TAG: latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+    - name: Azure Login
+      uses: azure/login@v1
       with:
-        dotnet-version: 6.0.x
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Cache NuGet packages
-      uses: actions/cache@v4
+    - name: Login to ACR
+      run: az acr login --name ${{ secrets.ACR_NAME }}
+
+    - name: Build and push Docker image to ACR
+      uses: docker/build-push-action@v4
       with:
-        path: ~/.nuget/packages
-        key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json') }}
-        restore-keys: |
-          nuget-${{ runner.os }}-
-
-    - name: Restore dependencies
-      run: dotnet restore src/ZavaStorefront.sln
-
-    - name: Build
-      run: dotnet build src/ZavaStorefront.sln --configuration Release --no-restore
-
-    - name: Publish app
-      run: dotnet publish src/ZavaStorefront.csproj -c Release -o ./artifacts/publish --no-build
-
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: published-app
-        path: ./artifacts/publish
+        context: .
+        file: src/Dockerfile
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.IMAGE_TAG }}
 
   deploy:
     needs: build
