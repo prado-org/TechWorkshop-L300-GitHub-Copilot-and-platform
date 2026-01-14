@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_NOLOGO: "true"
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          nuget-${{ runner.os }}-
+
+    - name: Restore dependencies
+      run: dotnet restore ZavaStorefront.sln
+
+    - name: Build
+      run: dotnet build ZavaStorefront.sln --configuration Release --no-restore
+
+    - name: Run tests
+      run: |
+        set -e
+        if dotnet test --list-tests --verbosity normal | grep -q "No test projects"; then
+          echo "No test projects found, skipping tests.";
+        else
+          dotnet test ZavaStorefront.sln --configuration Release --no-build --verbosity normal;
+        fi
+
+    - name: Publish app
+      run: dotnet publish src/ZavaStorefront.csproj -c Release -o ./artifacts/publish --no-build
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: published-app
+        path: ./artifacts/publish
