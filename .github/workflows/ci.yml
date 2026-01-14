@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     env:
       DOTNET_NOLOGO: "true"
       ACR_NAME: ${{ secrets.ACR_NAME }}
