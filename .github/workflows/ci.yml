@@ -30,10 +30,10 @@ jobs:
           nuget-${{ runner.os }}-
 
     - name: Restore dependencies
-      run: dotnet restore ZavaStorefront.sln
+      run: dotnet restore src/ZavaStorefront.sln
 
     - name: Build
-      run: dotnet build ZavaStorefront.sln --configuration Release --no-restore
+      run: dotnet build src/ZavaStorefront.sln --configuration Release --no-restore
 
     - name: Run tests
       run: |
@@ -41,7 +41,7 @@ jobs:
         if dotnet test --list-tests --verbosity normal | grep -q "No test projects"; then
           echo "No test projects found, skipping tests.";
         else
-          dotnet test ZavaStorefront.sln --configuration Release --no-build --verbosity normal;
+          dotnet test src/ZavaStorefront.sln --configuration Release --no-build --verbosity normal;
         fi
 
     - name: Publish app
